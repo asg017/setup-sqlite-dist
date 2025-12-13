@@ -29840,7 +29840,10 @@ async function run() {
     )!;
     */
     const p = await toolCacheExports.downloadTool("https://github.com/asg017/sqlite-dist/releases/download/v0.0.1-alpha.19/sqlite-dist-aarch64-apple-darwin.tar.xz");
-    const p2 = await toolCacheExports.extractXar(p, "tmp2");
+    // This is a .tar.xz archive. Use extractTar with xz flags (J) and
+    // strip the top-level directory (equivalent to --strip-components=1).
+    // Pass flags as an array so we can include GNU tar long options.
+    const p2 = await toolCacheExports.extractTar(p, "tmp2", ["xJ", "--strip-components=1"]);
     const pcache = await toolCacheExports.cacheDir(p2, "sqlite-dist", "TEST");
     coreExports.addPath(pcache);
     coreExports.debug(p);

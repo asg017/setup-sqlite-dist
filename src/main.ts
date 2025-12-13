@@ -27,7 +27,10 @@ export async function run(): Promise<void> {
   const p = await tc.downloadTool(
     "https://github.com/asg017/sqlite-dist/releases/download/v0.0.1-alpha.19/sqlite-dist-aarch64-apple-darwin.tar.xz",
   );
-  const p2 = await tc.extractXar(p, "tmp2");
+  // This is a .tar.xz archive. Use extractTar with xz flags (J) and
+  // strip the top-level directory (equivalent to --strip-components=1).
+  // Pass flags as an array so we can include GNU tar long options.
+  const p2 = await tc.extractTar(p, "tmp2", ["xJ", "--strip-components=1"]);
   const pcache = await tc.cacheDir(p2, "sqlite-dist", "TEST");
   core.addPath(pcache);
   core.debug(p);
