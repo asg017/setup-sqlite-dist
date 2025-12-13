@@ -29877,7 +29877,7 @@ async function isMuslOs() {
     }
 }
 
-const VERSIONS = JSON.parse(readFileSync(join(__dirname, "..", "version.json"), "utf-8"));
+const VERSIONS = JSON.parse(readFileSync(join(import.meta.dirname, "..", "version.json"), "utf-8"));
 const LATEST_VERSION = VERSIONS.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 /**
  * The main function for the action.
