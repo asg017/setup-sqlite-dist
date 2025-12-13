@@ -6,8 +6,8 @@ branding:
   icon: package
   color: blue
 
-inputs:
-outputs:
+inputs: {}
+outputs: {}
 
 runs:
   using: node24
