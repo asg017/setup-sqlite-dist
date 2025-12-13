@@ -7,7 +7,7 @@ const VERSIONS: {
   createdAt: string;
   name: string;
   tagName: string;
-}[] = JSON.parse(readFileSync("../version.json", "utf-8"));
+}[] = JSON.parse(readFileSync("version.json", "utf-8"));
 const LATEST_VERSION = VERSIONS.slice().sort(
   (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 )[0];
