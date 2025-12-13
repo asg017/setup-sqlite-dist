@@ -1,6 +1,6 @@
 import require$$0 from 'os';
 import require$$0$1 from 'crypto';
-import require$$1 from 'fs';
+import require$$1, { readFileSync } from 'fs';
 import require$$1$5 from 'path';
 import require$$2 from 'http';
 import require$$3 from 'https';
@@ -29816,7 +29816,67 @@ function requireToolCache () {
 
 var toolCacheExports = requireToolCache();
 
-//import * as github from "@actions/github";
+var execExports = requireExec();
+
+// https://github.com/astral-sh/setup-uv/blob/main/src/utils/platforms.ts
+function getArch() {
+    const arch = process.arch;
+    const archMapping = {
+        arm64: "aarch64",
+        ia32: "i686",
+        ppc64: "powerpc64le",
+        s390x: "s390x",
+        x64: "x86_64",
+    };
+    if (arch in archMapping) {
+        return archMapping[arch];
+    }
+}
+async function getPlatform() {
+    const processPlatform = process.platform;
+    const platformMapping = {
+        darwin: "apple-darwin",
+        linux: "unknown-linux-gnu",
+        win32: "pc-windows-msvc",
+    };
+    if (processPlatform in platformMapping) {
+        const platform = platformMapping[processPlatform];
+        if (platform === "unknown-linux-gnu") {
+            const isMusl = await isMuslOs();
+            return isMusl ? "unknown-linux-musl" : platform;
+        }
+        return platform;
+    }
+}
+async function isMuslOs() {
+    let stdOutput = "";
+    let errOutput = "";
+    const options = {
+        ignoreReturnCode: true,
+        listeners: {
+            stderr: (data) => {
+                errOutput += data.toString();
+            },
+            stdout: (data) => {
+                stdOutput += data.toString();
+            },
+        },
+        silent: !coreExports.isDebug(),
+    };
+    try {
+        const execArgs = ["--version"];
+        await execExports.exec("ldd", execArgs, options);
+        return stdOutput.includes("musl") || errOutput.includes("musl");
+    }
+    catch (error) {
+        const err = error;
+        coreExports.warning(`Failed to determine glibc or musl. Falling back to glibc. Error: ${err.message}`);
+        return false;
+    }
+}
+
+const VERSIONS = JSON.parse(readFileSync("versions.json", "utf-8"));
+const LATEST_VERSION = VERSIONS.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 /**
  * The main function for the action.
  *
@@ -29839,12 +29899,38 @@ async function run() {
       (a) => a.name === "sqlite-dist-aarch64-apple-darwin.tar.xz",
     )!;
     */
-    const p = await toolCacheExports.downloadTool("https://github.com/asg017/sqlite-dist/releases/download/v0.0.1-alpha.19/sqlite-dist-aarch64-apple-darwin.tar.xz");
+    const platform = await getPlatform();
+    const arch = getArch();
+    if (!platform || !arch) {
+        throw new Error(`Unsupported platform or architecture: platform=${platform} arch=${arch}`);
+    }
+    let target = null;
+    if (platform === "apple-darwin") {
+        if (arch === "aarch64") {
+            target = "sqlite-dist-aarch64-apple-darwin.tar.xz";
+        }
+        else if (arch === "x86_64") {
+            target = "sqlite-dist-x86_64-apple-darwin.tar.xz";
+        }
+    }
+    else if (platform === "pc-windows-msvc") ;
+    else if (platform === "unknown-linux-gnu") {
+        if (arch === "aarch64") {
+            target = "sqlite-dist-aarch64-unknown-linux-gnu.tar.xz";
+        }
+        else if (arch === "x86_64") {
+            target = "sqlite-dist-x86_64-unknown-linux-gnu.tar.xz";
+        }
+    }
+    if (!target) {
+        throw new Error(`No prebuilt binaries for platform=${platform} arch=${arch}`);
+    }
+    const p = await toolCacheExports.downloadTool(`https://github.com/asg017/sqlite-dist/releases/download/${LATEST_VERSION.tagName}/${target}`);
     // This is a .tar.xz archive. Use extractTar with xz flags (J) and
     // strip the top-level directory (equivalent to --strip-components=1).
     // Pass flags as an array so we can include GNU tar long options.
     const p2 = await toolCacheExports.extractTar(p, "tmp2", ["xJ", "--strip-components=1"]);
-    const pcache = await toolCacheExports.cacheDir(p2, "sqlite-dist", "TEST");
+    const pcache = await toolCacheExports.cacheDir(p2, "sqlite-dist", LATEST_VERSION.tagName);
     coreExports.addPath(pcache);
     coreExports.debug(p);
     coreExports.debug(p2);
