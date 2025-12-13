@@ -28,6 +28,7 @@ import require$$0$9 from 'diagnostics_channel';
 import require$$2$2 from 'child_process';
 import require$$6$1 from 'timers';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -29876,7 +29877,7 @@ async function isMuslOs() {
     }
 }
 
-const VERSIONS = JSON.parse(readFileSync("version.json", "utf-8"));
+const VERSIONS = JSON.parse(readFileSync(join(__dirname, "..", "version.json"), "utf-8"));
 const LATEST_VERSION = VERSIONS.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 /**
  * The main function for the action.
