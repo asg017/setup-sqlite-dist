@@ -1,13 +1,13 @@
 import * as core from "@actions/core";
 import * as tc from "@actions/tool-cache";
-import { readFileSync } from "fs";
 import { getPlatform, getArch } from "./platform.js";
+import { readFileSync } from "node:fs";
 
 const VERSIONS: {
   createdAt: string;
   name: string;
   tagName: string;
-}[] = JSON.parse(readFileSync("versions.json", "utf-8"));
+}[] = JSON.parse(readFileSync("../version.json", "utf-8"));
 const LATEST_VERSION = VERSIONS.slice().sort(
   (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 )[0];

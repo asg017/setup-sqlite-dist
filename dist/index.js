@@ -1,6 +1,6 @@
 import require$$0 from 'os';
 import require$$0$1 from 'crypto';
-import require$$1, { readFileSync } from 'fs';
+import require$$1 from 'fs';
 import require$$1$5 from 'path';
 import require$$2 from 'http';
 import require$$3 from 'https';
@@ -27,6 +27,7 @@ import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
 import require$$2$2 from 'child_process';
 import require$$6$1 from 'timers';
+import { readFileSync } from 'node:fs';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -29875,7 +29876,7 @@ async function isMuslOs() {
     }
 }
 
-const VERSIONS = JSON.parse(readFileSync("versions.json", "utf-8"));
+const VERSIONS = JSON.parse(readFileSync("../version.json", "utf-8"));
 const LATEST_VERSION = VERSIONS.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 /**
  * The main function for the action.
