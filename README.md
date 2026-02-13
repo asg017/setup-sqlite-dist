@@ -5,7 +5,6 @@
 - run: sqlite-dist --help
 ```
 
-
 ```
 gh release -R asg017/sqlite-dist list --json name,tagName,createdAt,isLatest > version.json
 ```
